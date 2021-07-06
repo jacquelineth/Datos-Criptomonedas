@@ -24,8 +24,6 @@ for fichero in os.listdir(directory):
         continue
 
 
-start = dt.datetime(2018, 1,1 )
-end =  dt.datetime.now()
 
 
 print(f"Tabla de Cripto {cripto}")
@@ -52,11 +50,16 @@ plt.yscale('log')
 
 for ticker in cripto:
     plt.plot(combined[ticker], label=ticker)
-
-plt.legend(loc="upper right")
+    plt.legend(loc="upper right")
 plt.show()
 
+
+
 '''Calculate Correlation'''
-combined =  combined.pct_change().corr(method="pearson")
-sns.heatmap(combined , annot=False, cmap="coolwarm")
+
+combined =  combined.pct_change().corr(method="pearson") 
+##TODO :  https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.corr.html Comprobar otros algoritmo 
+
+sns.heatmap(combined , annot=True, cmap="coolwarm")
+## El heatmap enseña la correlación con colores entre los valores de 
 plt.show()
