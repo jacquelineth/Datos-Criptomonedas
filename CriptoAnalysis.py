@@ -1,3 +1,4 @@
+
 import os 
 
 import pandas as pd
@@ -47,25 +48,37 @@ for ticker in cripto :
 
 
 plt.yscale('log')
+
 mitad = len(cripto)//2
 
-for ticker in cripto[:mitad]:
-    plt.plot(combined[ticker], label=ticker)
-    plt.legend(loc="upper right")
-plt.show()
+
+plt.subplot(2,1,1)
 for ticker in cripto[mitad:]:
     plt.plot(combined[ticker], label=ticker)
-    plt.legend(loc="upper right")
+    plt.legend(loc="upper left")
+plt.yscale('log')
+#plt.show()
+
+plt.subplot(2,1,2 )
+for ticker in cripto[:mitad]:
+    plt.plot(combined[ticker], label=ticker)
+    plt.legend(loc="upper left")
+plt.yscale('log')
+
 plt.show()
 
 
 '''Calculate Correlation'''
 
-combined =  combined.pct_change().corr(method="pearson") 
-##TODO :  https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.corr.html Comprobar otros algoritmo 
+combined =  combined.pct_change().corr(method="pearson") #linear correlation 
+## Referencia  :  https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.corr.html Comprobar otros algoritmo 
+''' Probando algoritmo de correlaciones
+combined =  combined.pct_change().corr(method="kendall") # ordinal/rank correlation 
+        ##Referencia  : https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
+combined =  combined.pct_change().corr(method="spearman") # strictly monotone
+        ##Referncia  : https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient
+'''
 
-print(combined.head())
-
-sns.heatmap(combined , annot=True, cmap="coolwarm")
-## El heatmap enseña la correlación con colores entre los valores, predomina el azul entonces sin correlaciones notable
+sns.heatmap(combined , annot=True, cmap="coolwarm", annot_kws={"size":6})
+## El heatmap enseña la correlación con colores entre las monedas, predomina el azul entonces sin correlaciones notable
 plt.show()
