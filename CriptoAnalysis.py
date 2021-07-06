@@ -8,17 +8,18 @@ import datetime as dt
 
 from seaborn.matrix import heatmap
 
-currency  = "USD"
+moneda  = "USD"
 metric = "Close"
 
 
 '''Data Prep'''
-crypto = []
+cripto = []
 
+#Parseamos el repertorio por csv de cripto
 directory = f"Ficheros Originales\\"
-for filename in os.listdir(directory):
-    if filename.endswith(f"{currency}.csv"):
-        crypto.append( filename.split('-')[0])
+for fichero in os.listdir(directory):
+    if fichero.endswith(f"{moneda}.csv"):
+        cripto.append( fichero.split('-')[0])
     else:
         continue
 
@@ -26,21 +27,21 @@ for filename in os.listdir(directory):
 start = dt.datetime(2018, 1,1 )
 end =  dt.datetime.now()
 
-# crypto = ['BTC','ADA','BCH','BNB' 'ETH', 'LTC', 'XRP', 'DOGE', 'MATIC']
-print(crypto)
+
+print(f"Tabla de Cripto {cripto}")
 
 colnames = []
 
-first  = True 
+primero  = True 
 
-for ticker in crypto :
+for ticker in cripto :
 
-    data = pd.read_csv(f"Ficheros Originales\{ticker}-{currency}.csv")
-    if first: 
+    data = pd.read_csv(f"Ficheros Originales\{ticker}-{moneda}.csv")
+    if primero: 
         combined =  data[[metric]].copy ()
         colnames.append(ticker)
         combined.columns =  colnames
-        first = False
+        primero = False
     else:
         combined  = combined.join(data[metric])
         colnames.append(ticker)
@@ -49,7 +50,7 @@ for ticker in crypto :
 
 plt.yscale('log')
 
-for ticker in crypto:
+for ticker in cripto:
     plt.plot(combined[ticker], label=ticker)
 
 plt.legend(loc="upper right")
