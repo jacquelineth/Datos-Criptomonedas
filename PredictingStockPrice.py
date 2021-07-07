@@ -1,4 +1,4 @@
-# https://youtu.be/PuZY9q-aKLw
+import os
 from itertools import Predicate
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,6 +9,29 @@ import datetime as dt
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential 
 from tensorflow.keras.layers import Dropout, Dense, LSTM 
+#local
+import CryptoTrainingModel as ctm
+
+moneda  = "USD"
+metric = "Close"
+
+
+'''Data Prep'''
+cripto = []
+
+#Parseamos el repertorio por csv de cripto
+directory = f"Ficheros Originales"+os.sep
+for fichero in os.listdir(directory):
+    if fichero.endswith(f"{moneda}.csv"):
+        cripto.append( fichero.split('-')[0])
+    else:
+        continue
+
+
+
+
+print(f"Tabla de Cripto {cripto}")
+
 
 #Load Data
 company = 'BTC'
@@ -16,7 +39,9 @@ company = 'BTC'
 start = dt.datetime(2012,1,1)
 end = dt.datetime(2020,1,1)
 
-data = web.DataReader(company, 'yahoo', start, end )
+for ticker in cripto:
+    data = pd.read_csv(directory+f"{ticker}-f{moneda}.csv") 
+# web.DataReader(company, 'yahoo', start, end )
 
 # Prepare Data
 scaler = MinMaxScaler(feature_range=(0,1))
