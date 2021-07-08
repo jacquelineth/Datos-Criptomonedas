@@ -16,9 +16,10 @@ prediction_day = 60
 scaler = MinMaxScaler(feature_range=(0,1))
 
 class TFMmodeler:
-    def __init__(self, str pticker, str moneda):
+    def __init__(self,str directory, str pticker, str moneda):
         self.ticker = pticker
         self.moneda = moneda
+        self.directory = directory
         data = pd.read_csv(directory+f"{pticker}-f{moneda}.csv") 
 
         # Prepare Data
@@ -61,7 +62,7 @@ class TFMmodeler:
         test_start= pstart
         test_end= pEnd
 
-
+        ###TODO :Get Test data
         test_data = web.DataReader(company, 'yahoo', test_start, test_end)
         actual_prices =  test_data['Close'].values
 
