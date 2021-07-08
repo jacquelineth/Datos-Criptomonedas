@@ -20,8 +20,12 @@ metric = "Close"
 cripto = []
 
 #Parseamos el repertorio por csv de cripto
-directory = f"Ficheros Originales"+os.sep
-for fichero in os.listdir(directory):
+data_directory = f"Ficheros Originales"+os.sep
+test_directory = f"Datos_Pruebas"+os.sep
+
+
+
+for fichero in os.listdir(data_directory):
     if fichero.endswith(f"{moneda}.csv"):
         cripto.append( fichero.split('-')[0])
     else:
@@ -30,7 +34,7 @@ for fichero in os.listdir(directory):
 
 
 
-print(f"Tabla de Cripto {cripto}")
+print(f"Tabla de Cripto: {cripto}")
 
 
 #Load Data
@@ -40,7 +44,7 @@ start = dt.datetime(2012,1,1)
 end = dt.datetime(2020,1,1)
 
 for ticker in cripto:
-    data = pd.read_csv(directory+f"{ticker}-f{moneda}.csv") 
+    data = pd.read_csv(data_directory+f"{ticker}-f{moneda}.csv") 
 # web.DataReader(company, 'yahoo', start, end )
 
 # Prepare Data
