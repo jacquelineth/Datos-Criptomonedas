@@ -1,5 +1,5 @@
 #!/bin/sh
-curl "https://query1.finance.yahoo.com/v7/finance/download/ADA-USD?period1=1623110400&period2=1625702400&interval=1d&events=history&includeAdjustedClose=true" -o 
+curl "https://query1.finance.yahoo.com/v7/finance/download/ADA-USD?period1=1623110400&period2=1625702400&interval=1d&events=history&includeAdjustedClose=true" -o ADA-USD.csv
 curl "https://query1.finance.yahoo.com/v7/finance/download/BCH-USD?period1=1623110400&period2=1625702400&interval=1d&events=history&includeAdjustedClose=true" -o BCH-USD.csv
 curl "https://query1.finance.yahoo.com/v7/finance/download/BNB-USD?period1=1623110400&period2=1625702400&interval=1d&events=history&includeAdjustedClose=true" -o BNB-USD.csv
 curl "https://query1.finance.yahoo.com/v7/finance/download/BTC-USD?period1=1623110400&period2=1625702400&interval=1d&events=history&includeAdjustedClose=true" -o BTC-USD.csv
