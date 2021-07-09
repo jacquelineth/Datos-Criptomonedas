@@ -3,11 +3,12 @@ from itertools import Predicate
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import pandas_datareader as web
+
 import datetime as dt
 
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential 
+from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import Dropout, Dense, LSTM 
 
 
@@ -16,15 +17,22 @@ prediction_day = 60
 scaler = MinMaxScaler(feature_range=(0,1))
 
 class TFMmodeler:
-    def __init__(self,str directory, str pticker, str moneda):
+    model_directory=f"modelos"+os.sep
+    test_directory = f"Datos_Pruebas"+os.sep
+
+    def __init__(self, directory: str , pticker: str, moneda: str):
         self.ticker = pticker
         self.moneda = moneda
         self.directory = directory
-        data = pd.read_csv(directory+f"{pticker}-f{moneda}.csv") 
+
+        if self.loadModel():
+            return 
+
+        self.data = pd.read_csv(directory+f"{pticker}-{moneda}.csv") 
 
         # Prepare Data
         
-        scaled_data = scaler.fit_transform (data['Close'].values.reshape(-1,1))
+        scaled_data = scaler.fit_transform (self.data['Close'].values.reshape(-1,1))
 
         x_train = []
         y_train = []
@@ -49,24 +57,28 @@ class TFMmodeler:
 
         self.model.compile(optimizer='adam',loss='mean_squared_error')
         self.model.fit(x_train,y_train, epochs=25, batch_size=32)
-        return self.model
+       # return self.model
 
     def saveModel(self):
-        ###TODO persist to file
+        self.model.save(self.model_directory+f"{self.ticker}-{self.moneda}.h5")
+
+    def loadModel(self) -> bool:
+        if os.path.exists(self.model_directory+f"{self.ticker}-{self.moneda}.h5"):
+            self.model= load_model(self.model_directory+f"{self.ticker}-{self.moneda}.h5")
+            return True
+        else:
+            return False
     
-    def loadModel(self):
-        ###TODO retrieve from file
-    
-    def testModel(dt.datetime pStart, dt.datetime pEnd):
+    def testModel(self, pStart: dt.datetime,  pEnd: dt.datetime):
         # Load Test Data
-        test_start= pstart
+        test_start= pStart
         test_end= pEnd
 
         ###TODO :Get Test data
-        test_data = web.DataReader(company, 'yahoo', test_start, test_end)
+        test_data = pd.read_csv(self.test_directory+f"{self.ticker}-f{self.moneda}.csv") 
         actual_prices =  test_data['Close'].values
 
-        total_dataset = pd.concat((data['Close'], test_data['Close']))
+        total_dataset = pd.concat((self.data['Close'], test_data['Close']))
 
         model_inputs = total_dataset[len(total_dataset)-len(test_data)- prediction_day:].values
         model_inputs =  model_inputs.reshape(-1,1)
@@ -82,7 +94,7 @@ class TFMmodeler:
         x_test = np.array(x_test)
         x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
 
-        predicted_prices = model.predict(x_test)
+        predicted_prices = self.model.predict(x_test)
         predicted_prices = scaler.inverse_transform(predicted_prices)
 
         
