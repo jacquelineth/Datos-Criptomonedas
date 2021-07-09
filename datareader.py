@@ -1,6 +1,9 @@
 import pip
-pip.main(['install', 'pandas_datareader'])
+pip.main(['install', 'scikit'])
+pip.main(['install', 'tensorflow'])
+pip.main(['install', 'itertools'])
 pip.main(['install', 'pandas'])
 pip.main(['install', 'matplotlib.pyplot'])
 pip.main(['install', 'mplfinance'])
 pip.main(['install', 'seaborn'])
+pip.main(['install', 'numpy'])
