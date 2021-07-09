@@ -21,7 +21,7 @@ cripto = []
 
 #Parseamos el repertorio por csv de cripto
 data_directory = f"Ficheros Originales"+os.sep
-test_directory = f"Datos_Pruebas"+os.sep
+
 
 
 
