@@ -34,7 +34,12 @@ class TFMmodeler:
 
         # Check and Load existing model 
         if self.loadModel():
+            print(f"Loading stored Model for {self.ticker}")
             return 
+        else :
+            print(f"Computing  Model for {self.ticker}")
+
+
 
         x_train = []
         y_train = []
