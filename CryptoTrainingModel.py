@@ -63,7 +63,7 @@ class TFMmodeler:
         self.model.add(Dense(units=1)) # Prediciton of the next closing
 
         self.model.compile(optimizer='adam',loss='mean_squared_error')
-        self.model.fit(x_train,y_train, epochs=25, batch_size=32)
+        self.model.fit(x_train,y_train, epochs=50, batch_size=32)
 
         if store:
             self.saveModel()
@@ -91,7 +91,7 @@ class TFMmodeler:
         #test_end= pEnd
 
         ###TODO :Get Test data
-        test_data = pd.read_csv(self.test_directory+f"{self.ticker}-f{self.moneda}.csv") 
+        test_data = pd.read_csv(self.test_directory+f"{self.ticker}-{self.moneda}.csv") 
         actual_prices =  test_data['Close'].values
 
         total_dataset = pd.concat((self.data['Close'], test_data['Close']))
@@ -115,7 +115,7 @@ class TFMmodeler:
 
         # Plot The Test Predicitons
         plt.plot(actual_prices, color= "black", label = f"Actual {self.ticker} price" )
-        plt.plot(predicted_prices, color = "green", label = f" Predicted  {self.ticker} price")
+        plt.plot(predicted_prices, color = "red", label = f"Predicted {self.ticker} price")
         plt.title(f"{self.ticker} Share Price")
         plt.xlabel('Time')
         plt.ylabel(f'{self.ticker} Share Price' )
