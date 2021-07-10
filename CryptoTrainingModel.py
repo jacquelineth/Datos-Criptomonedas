@@ -121,6 +121,7 @@ class TFMmodeler:
         plt.ylabel(f'{self.ticker} Share Price' )
         plt.legend()
         plt.show()
+        plt.savefig(self.model_directory+f"{self.ticker}-{self.moneda}.png")
 
         # Predict Next Day 
         real_data = [model_inputs[len(model_inputs) + 1 - prediction_day:len(model_inputs+1), 0]] 
