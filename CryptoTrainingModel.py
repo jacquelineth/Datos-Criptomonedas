@@ -13,7 +13,7 @@ from tensorflow.keras.layers import Dropout, Dense, LSTM
 
 
 '''Default Values and constant'''
-prediction_day = 30
+prediction_day = 60
 scaler = MinMaxScaler(feature_range=(0,1))
 
 class TFMmodeler:
