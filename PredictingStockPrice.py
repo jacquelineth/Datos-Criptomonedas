@@ -1,5 +1,5 @@
 import os
-from itertools import Predicate
+#from itertools import Predicate
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -49,8 +49,8 @@ modelosCrypto = []
 for ticker in cripto:
     modelosCrypto.append({"ticker":ticker, "model": ctm.TFMmodeler(data_directory,ticker,moneda) })
 
-for instance  in modelosCrypto:    
 ''' Test the Model Accuracy  on Existing Data '''
+for instance  in modelosCrypto:    
     instance["model"].testModel()
 
 

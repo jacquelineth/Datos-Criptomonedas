@@ -1,5 +1,5 @@
 import os
-from itertools import Predicate
+#from itertools import Predicate
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -44,16 +44,16 @@ class TFMmodeler:
             y_train.append(scaled_data[x,0])
 
         x_train, y_train = np.array(x_train), np.array(y_train)
-        x_train = np.reshape(x_train, (x_train,(x_train.shape[0],x_train.shape[1],1) ))    
+        x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1 ))    
 
         # Build The Model
         self.model = Sequential()
 
         self.model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1],1)))
         self.model.add(Dropout(0.2))
-        self.model.add(LSTM(unit=50, return_sequences=True))
+        self.model.add(LSTM(units=50, return_sequences=True))
         self.model.add(Dropout(0.2))
-        self.model.add(LSTM(unit=50))
+        self.model.add(LSTM(units=50))
         self.model.add(Dropout(0.2))
         self.model.add(Dense(units=1)) # Prediciton of the next closing
 
