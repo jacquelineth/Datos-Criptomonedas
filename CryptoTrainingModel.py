@@ -7,6 +7,7 @@ import pandas as pd
 import datetime as dt
 
 from sklearn.preprocessing import MinMaxScaler
+import sklearn.model_selection as model_selection
 from tensorflow.keras.models import Sequential 
 from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import Dropout, Dense, LSTM 
@@ -14,11 +15,11 @@ from tensorflow.keras.layers import Dropout, Dense, LSTM
 
 '''Default Values and constant'''
 prediction_day = 60
-scaler = MinMaxScaler(feature_range=(0,1))
 
 class TFMmodeler:
     model_directory=f"modelos"+os.sep
     test_directory = f"Datos_Pruebas"+os.sep
+    scaler = MinMaxScaler(feature_range=(0,1))
 
     def __init__(self, directory: str , pticker: str, moneda: str, store=True):
         self.ticker = pticker
@@ -26,15 +27,25 @@ class TFMmodeler:
         self.directory = directory
 
        
-        self.data = pd.read_csv(directory+f"{pticker}-{moneda}.csv") 
+        rawdata = pd.read_csv(directory+f"{pticker}-{moneda}.csv") 
+        #Drop Null and NAN row
+        rawdata = rawdata.dropna(axis=0 )
+        #Drop  unused columns
+        rawdata = rawdata.drop (['Open','High','Low', 'Volume','Adj Close'], axis=1)
 
+        rawdata['Date'] =  pd.to_datetime(rawdata['Date'], format='%Y-%m-%d')
+
+        #Split and keep 25% for testing
+        self.data, self.test_data = model_selection.train_test_split(rawdata, test_size=0.25, stratify=None, shuffle=False)
         # Prepare Data
         
-        scaled_data = scaler.fit_transform (self.data['Close'].values.reshape(-1,1))
+        
+        scaled_data = self.scaler.fit_transform (self.data['Close'].values.reshape(-1,1))
 
         # Check and Load existing model 
         if self.loadModel():
-            print(f"Loading stored Model for {self.ticker}")
+            print(f"Loading stored Model for {self.ticker} with data={self.data.info()}")
+            store=False
             return 
         else :
             print(f"Computing  Model for {self.ticker}")
@@ -90,15 +101,15 @@ class TFMmodeler:
         #test_start= pStart
         #test_end= pEnd
 
-        ###TODO :Get Test data
-        test_data = pd.read_csv(self.test_directory+f"{self.ticker}-{self.moneda}.csv") 
-        actual_prices =  test_data['Close'].values
+        ###TODO :Get better  Test data
+        # self.test_data = pd.read_csv(self.test_directory+f"{self.ticker}-{self.moneda}.csv") 
+        actual_prices =  self.test_data['Close'].values
 
-        total_dataset = pd.concat((self.data['Close'], test_data['Close']))
+        total_dataset = pd.concat((self.data['Close'], self.test_data['Close']), axis=0)
 
-        model_inputs = total_dataset[len(total_dataset)-len(test_data)- prediction_day:].values
+        model_inputs = total_dataset[len(total_dataset)-len(self.test_data)- prediction_day:].values
         model_inputs =  model_inputs.reshape(-1,1)
-        model_inputs = scaler.transform(model_inputs)
+        model_inputs = self.scaler.transform(model_inputs)
 
         # Make Predictions on  Test Data
 
@@ -111,27 +122,30 @@ class TFMmodeler:
         x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
 
         predicted_prices = self.model.predict(x_test)
-        predicted_prices = scaler.inverse_transform(predicted_prices)
+        new_predicted_prices = self.scaler.inverse_transform(predicted_prices)
+        print(f"\nResult: {predicted_prices}")
 
         # Plot The Test Predicitons
         plt.plot(actual_prices, color= "black", label = f"Actual {self.ticker} price" )
         plt.plot(predicted_prices, color = "red", label = f"Predicted {self.ticker} price")
+        plt.plot(new_predicted_prices, color = "green", label = f"inverse Predicted {self.ticker} price")
         plt.title(f"{self.ticker} Share Price")
         plt.xlabel('Time')
         plt.ylabel(f'{self.ticker} Share Price' )
         plt.legend()
         plt.show()
         plt.savefig(self.model_directory+f"{self.ticker}-{self.moneda}.png")
+        plt.interactive(True)
 
         # Predict Next Day 
         real_data = [model_inputs[len(model_inputs) + 1 - prediction_day:len(model_inputs+1), 0]] 
         real_data = np.array(real_data)
         real_data = np.reshape(real_data, (real_data.shape[0],real_data.shape[1],1))
 
-        print(scaler.inverse_transform(real_data[-1]))
+        print(self.scaler.inverse_transform(real_data[-1]))
 
         prediction = self.model.predict(real_data)
-        prediction = scaler.inverse_transform(prediction)
+        prediction = self.scaler.inverse_transform(prediction)
         print (f"Prediction: {prediction}")
 
 
