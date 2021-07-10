@@ -122,20 +122,19 @@ class TFMmodeler:
         x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
 
         predicted_prices = self.model.predict(x_test)
-        new_predicted_prices = self.scaler.inverse_transform(predicted_prices)
+        npredicted_prices = self.scaler.inverse_transform(predicted_prices)
         print(f"\nResult: {predicted_prices}")
 
         # Plot The Test Predicitons
         plt.plot(actual_prices, color= "black", label = f"Actual {self.ticker} price" )
         plt.plot(predicted_prices, color = "red", label = f"Predicted {self.ticker} price")
-        plt.plot(new_predicted_prices, color = "green", label = f"inverse Predicted {self.ticker} price")
         plt.title(f"{self.ticker} Share Price")
         plt.xlabel('Time')
         plt.ylabel(f'{self.ticker} Share Price' )
         plt.legend()
         plt.show()
         plt.savefig(self.model_directory+f"{self.ticker}-{self.moneda}.png")
-        plt.interactive(True)
+        
 
         # Predict Next Day 
         real_data = [model_inputs[len(model_inputs) + 1 - prediction_day:len(model_inputs+1), 0]] 
