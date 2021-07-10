@@ -13,26 +13,28 @@ from tensorflow.keras.layers import Dropout, Dense, LSTM
 
 
 '''Default Values and constant'''
-prediction_day = 60
+prediction_day = 30
 scaler = MinMaxScaler(feature_range=(0,1))
 
 class TFMmodeler:
     model_directory=f"modelos"+os.sep
     test_directory = f"Datos_Pruebas"+os.sep
 
-    def __init__(self, directory: str , pticker: str, moneda: str):
+    def __init__(self, directory: str , pticker: str, moneda: str, store=True):
         self.ticker = pticker
         self.moneda = moneda
         self.directory = directory
 
-        if self.loadModel():
-            return 
-
+       
         self.data = pd.read_csv(directory+f"{pticker}-{moneda}.csv") 
 
         # Prepare Data
         
         scaled_data = scaler.fit_transform (self.data['Close'].values.reshape(-1,1))
+
+        # Check and Load existing model 
+        if self.loadModel():
+            return 
 
         x_train = []
         y_train = []
@@ -57,8 +59,14 @@ class TFMmodeler:
 
         self.model.compile(optimizer='adam',loss='mean_squared_error')
         self.model.fit(x_train,y_train, epochs=25, batch_size=32)
+
+        if store:
+            self.saveModel()
        # return self.model
 
+
+    '''Serialization'''
+    
     def saveModel(self):
         self.model.save(self.model_directory+f"{self.ticker}-{self.moneda}.h5")
 
@@ -68,11 +76,14 @@ class TFMmodeler:
             return True
         else:
             return False
+
+
+    ''' Test the Model '''            
     
-    def testModel(self, pStart: dt.datetime,  pEnd: dt.datetime):
+    def testModel(self ): #, pStart: dt.datetime,  pEnd: dt.datetime):
         # Load Test Data
-        test_start= pStart
-        test_end= pEnd
+        #test_start= pStart
+        #test_end= pEnd
 
         ###TODO :Get Test data
         test_data = pd.read_csv(self.test_directory+f"{self.ticker}-f{self.moneda}.csv") 
@@ -97,4 +108,26 @@ class TFMmodeler:
         predicted_prices = self.model.predict(x_test)
         predicted_prices = scaler.inverse_transform(predicted_prices)
 
-        
+        # Plot The Test Predicitons
+        plt.plot(actual_prices, color= "black", label = f"Actual {self.ticker} price" )
+        plt.plot(predicted_prices, color = "green", label = f" Predicted  {self.ticker} price")
+        plt.title(f"{self.ticker} Share Price")
+        plt.xlabel('Time')
+        plt.ylabel(f'{self.ticker} Share Price' )
+        plt.legend()
+        plt.show()
+
+        # Predict Next Day 
+        real_data = [model_inputs[len(model_inputs) + 1 - prediction_day:len(model_inputs+1), 0]] 
+        real_data = np.array(real_data)
+        real_data = np.reshape(real_data, (real_data.shape[0],real_data.shape[1],1))
+
+        print(scaler.inverse_transform(real_data[-1]))
+
+        prediction = self.model.predict(real_data)
+        prediction = scaler.inverse_transform(prediction)
+        print (f"Prediction: {prediction}")
+
+
+
+        return predicted_prices
