@@ -74,10 +74,11 @@ class TFMmodeler:
         self.model.add(Dense(units=1)) # Prediciton of the next closing
 
         self.model.compile(optimizer='adam',loss='mean_squared_error')
-        self.model.fit(x_train,y_train, epochs=50, batch_size=32)
+        history=self.model.fit(x_train,y_train, epochs=25, batch_size=32)
 
         if store:
             self.saveModel()
+            self.saveHistory(history)
        # return self.model
 
 
@@ -93,6 +94,20 @@ class TFMmodeler:
         else:
             return False
 
+
+    def saveHistory(self,history):
+        # Dibujamos nuestra gráfica de apredizaje
+        epochs_plot = range(1, len(history.history['accuracy'])+1, 1)
+
+        plt.plot(epochs_plot, history.history['accuracy'], 'r--', label = 'Evolución del accuracy entrenamiento')
+        plt.plot(epochs_plot, history.history['val_accuracy'], 'g-', label = 'Evolución del accuracy validación')
+
+
+        plt.title('Performance de mi red neuronal')
+        plt.ylabel('Accuracy')
+        plt.xlabel('Época')
+        plt.legend()
+        plt.savefig(self.model_directory+f"{self.ticker}-{self.moneda}_train.png")
 
     ''' Test the Model '''            
     
@@ -126,13 +141,13 @@ class TFMmodeler:
         print(f"\nResult: {predicted_prices}")
 
         # Plot The Test Predicitons
+        plt.figure()
         plt.plot(actual_prices, color= "black", label = f"Actual {self.ticker} price" )
         plt.plot(predicted_prices, color = "red", label = f"Predicted {self.ticker} price")
         plt.title(f"{self.ticker} Share Price")
         plt.xlabel('Time')
         plt.ylabel(f'{self.ticker} Share Price' )
         plt.legend()
-        plt.show()
         plt.savefig(self.model_directory+f"{self.ticker}-{self.moneda}.png")
         
 
