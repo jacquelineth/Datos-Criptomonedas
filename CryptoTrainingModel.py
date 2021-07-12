@@ -44,7 +44,8 @@ class TFMmodeler:
 
         # Check and Load existing model 
         if self.loadModel():
-            print(f"Loading stored Model for {self.ticker} with data={self.data.info()}")
+            #print(f"Loading stored Model for {self.ticker} with data={self.data.info()}")
+            print(f"Loading stored Model for {self.ticker}")
             store=False
             return 
         else :
@@ -97,27 +98,30 @@ class TFMmodeler:
 
     def saveHistory(self,history):
         # Dibujamos nuestra gráfica de apredizaje
-        epochs_plot = range(1, len(history.history['accuracy'])+1, 1)
+ 
+        epochs_plot = range(1, len(history.history['loss'])+1, 1)
 
-        plt.plot(epochs_plot, history.history['accuracy'], 'r--', label = 'Evolución del accuracy entrenamiento')
-        plt.plot(epochs_plot, history.history['val_accuracy'], 'g-', label = 'Evolución del accuracy validación')
-
-
+        plt.figure(); 
+        plt.plot(epochs_plot, history.history['loss'], 'r--', label = 'Evolución del loss entrenamiento')
         plt.title('Performance de mi red neuronal')
-        plt.ylabel('Accuracy')
+        plt.ylabel('loss')
         plt.xlabel('Época')
         plt.legend()
         plt.savefig(self.model_directory+f"{self.ticker}-{self.moneda}_train.png")
+ 
 
     ''' Test the Model '''            
     
-    def testModel(self ): #, pStart: dt.datetime,  pEnd: dt.datetime):
-        # Load Test Data
-        #test_start= pStart
-        #test_end= pEnd
+    def testModel(self ): 
+
 
         ###TODO :Get better  Test data
-        # self.test_data = pd.read_csv(self.test_directory+f"{self.ticker}-{self.moneda}.csv") 
+        try:
+            self.test_data = pd.read_csv(self.test_directory+f"{self.ticker}-{self.moneda}.csv") 
+            self.test_data = self.test_data.drop (['Open','High','Low', 'Volume','Adj Close'], axis=1)
+            self.test_data['Date'] =  pd.to_datetime(self.test_data['Date'], format='%Y-%m-%d')
+        except FileNotFoundError :
+            print(f"Using split Test Data for {self.ticker}")
         actual_prices =  self.test_data['Close'].values
 
         total_dataset = pd.concat((self.data['Close'], self.test_data['Close']), axis=0)
@@ -130,7 +134,7 @@ class TFMmodeler:
 
         x_test = []
 
-        for x in range(prediction_days,len (model_inputs)):
+        for x in range(prediction_days,len(model_inputs)):
             x_test.append(model_inputs[x-prediction_days:x, 0])
 
         x_test = np.array(x_test)
@@ -138,7 +142,7 @@ class TFMmodeler:
 
         predicted_prices = self.model.predict(x_test)
         predicted_prices = self.scaler.inverse_transform(predicted_prices)
-        print(f"\nResult: {predicted_prices}")
+        
 
         # Plot The Test Predicitons
         plt.figure()
@@ -156,11 +160,12 @@ class TFMmodeler:
         real_data = np.array(real_data)
         real_data = np.reshape(real_data, (real_data.shape[0],real_data.shape[1],1))
 
-        print(self.scaler.inverse_transform(real_data[-1]))
 
+        '''
         prediction = self.model.predict(real_data)
         prediction = self.scaler.inverse_transform(prediction)
         print (f"Prediction: {prediction}")
+        '''
 
 
 

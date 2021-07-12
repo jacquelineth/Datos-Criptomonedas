@@ -19,11 +19,12 @@ metric = "Close"
 '''Data Prep'''
 cripto = []
 
-#Parseamos el repertorio por csv de cripto
+# Variable de la carrpeta de datos de crypto
 data_directory = f"Ficheros Originales"+os.sep
 
 
 
+#Parseamos el repertorio por csv de cripto
 
 for fichero in os.listdir(data_directory):
     if fichero.endswith(f"{moneda}.csv"):
@@ -38,14 +39,13 @@ print(f"Tabla de Cripto: {cripto}")
 
 
 #Load Data
-company = 'BTC'
 
-start = dt.datetime(2012,1,1)
-end = dt.datetime(2020,1,1)
+
 
 '''Tabla de modelo '''
 modelosCrypto = []
 
+# Creamos una tabla de modelo, con un modelo propio a cada cripto
 for ticker in cripto:
     modelosCrypto.append({"ticker":ticker, "model": ctm.TFMmodeler(data_directory,ticker,moneda) })
 
