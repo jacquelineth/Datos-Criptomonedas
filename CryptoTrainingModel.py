@@ -15,16 +15,17 @@ from tensorflow.keras.layers import Dropout, Dense, LSTM
 
 '''Default Values and constant'''
 prediction_days = 60
-
+'''Una clase  para llevar todo el modelo de una crimtomoneda, datos y kit de entranamiento '''
 class TFMmodeler:
+    # Propriedades estatica 
     model_directory=f"modelos"+os.sep
     test_directory = f"Datos_Pruebas"+os.sep
-    scaler = MinMaxScaler(feature_range=(0,1))
 
     def __init__(self, directory: str , pticker: str, moneda: str, store=True):
         self.ticker = pticker
         self.moneda = moneda
         self.directory = directory
+        self.scaler = MinMaxScaler(feature_range=(0,1))
 
        
         rawdata = pd.read_csv(directory+f"{pticker}-{moneda}.csv") 
@@ -32,17 +33,17 @@ class TFMmodeler:
         rawdata = rawdata.dropna(axis=0 )
         #Drop  unused columns
         rawdata = rawdata.drop (['Open','High','Low', 'Volume','Adj Close'], axis=1)
-
+        #Convertir fecha en tipo datetime
         rawdata['Date'] =  pd.to_datetime(rawdata['Date'], format='%Y-%m-%d')
 
-        #Split and keep 25% for testing
+        #Partimos la table de datos y guardamos 25% para probar luego
         self.data, self.test_data = model_selection.train_test_split(rawdata, test_size=0.25, stratify=None, shuffle=False)
         # Prepare Data
         
-        
+        # De la columna Close, reducimos a -1,1 
         scaled_data = self.scaler.fit_transform (self.data['Close'].values.reshape(-1,1))
 
-        # Check and Load existing model 
+        # Carga el modelo si ya existe
         if self.loadModel():
             #print(f"Loading stored Model for {self.ticker} with data={self.data.info()}")
             print(f"Loading stored Model for {self.ticker}")
@@ -51,15 +52,17 @@ class TFMmodeler:
         else :
             print(f"Computing  Model for {self.ticker}")
 
-
+        '''Datos  de  entrenamiento'''
 
         x_train = []
         y_train = []
 
+        # Hacemos una lista un dia (y ) y otra de los 60 dias anteriores
         for x in range(prediction_days,len(scaled_data)):
             x_train.append(scaled_data[x-prediction_days:x,0])
             y_train.append(scaled_data[x,0])
 
+        #transformamos en array de numpay
         x_train, y_train = np.array(x_train), np.array(y_train)
         x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1 ))    
 
@@ -116,17 +119,18 @@ class TFMmodeler:
 
 
         ###TODO :Get better  Test data
-        try:
+        try: # Intenta recuperar un fichero de prueba propio 
             self.test_data = pd.read_csv(self.test_directory+f"{self.ticker}-{self.moneda}.csv") 
             self.test_data = self.test_data.drop (['Open','High','Low', 'Volume','Adj Close'], axis=1)
             self.test_data['Date'] =  pd.to_datetime(self.test_data['Date'], format='%Y-%m-%d')
-        except FileNotFoundError :
+        except FileNotFoundError : # o usamos los datos apartados antes
             print(f"Using split Test Data for {self.ticker}")
         actual_prices =  self.test_data['Close'].values
-
+        # Vamos a guardar solo las columnas de cierre , y añadir los datos anteriores
         total_dataset = pd.concat((self.data['Close'], self.test_data['Close']), axis=0)
-
+        # asi podemos empezar a contar los 60 dias tambien para los primeros datos de prueba
         model_inputs = total_dataset[len(total_dataset)-len(self.test_data)- prediction_days:].values
+        #limitamos los valores 
         model_inputs =  model_inputs.reshape(-1,1)
         model_inputs = self.scaler.transform(model_inputs)
 
@@ -161,11 +165,11 @@ class TFMmodeler:
         real_data = np.reshape(real_data, (real_data.shape[0],real_data.shape[1],1))
 
 
-        '''
+        
         prediction = self.model.predict(real_data)
         prediction = self.scaler.inverse_transform(prediction)
         print (f"Prediction: {prediction}")
-        '''
+        
 
 
 
