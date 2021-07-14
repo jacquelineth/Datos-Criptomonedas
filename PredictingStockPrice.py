@@ -12,8 +12,8 @@ from tensorflow.keras.layers import Dropout, Dense, LSTM
 #local
 import CryptoTrainingModel as ctm
 
-moneda  = "USD"
-metric = "Close"
+moneda  = ctm.TFMmodeler.moneda
+metric = ctm.TFMmodeler.metric
 
 
 '''Data Prep'''

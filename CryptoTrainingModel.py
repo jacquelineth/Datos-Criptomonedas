@@ -13,13 +13,16 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.layers import Dropout, Dense, LSTM 
 
 
-'''Default Values and constant'''
+"""Default Values and constant"""
 prediction_days = 60
-'''Una clase  para llevar todo el modelo de una crimtomoneda, datos y kit de entranamiento '''
 class TFMmodeler:
+    """Una clase  para llevar todo el modelo de una crimtomoneda, datos y kit de entranamiento """
+
     # Propriedades estatica 
     model_directory=f"modelos"+os.sep
     test_directory = f"Datos_Pruebas"+os.sep
+    moneda = "USD"
+    metric = "Close"
 
     def __init__(self, directory: str , pticker: str, moneda: str, store=True):
         self.ticker = pticker
@@ -52,7 +55,7 @@ class TFMmodeler:
         else :
             print(f"Computing  Model for {self.ticker}")
 
-        '''Datos  de  entrenamiento'''
+        """Datos  de  entrenamiento"""
 
         x_train = []
         y_train = []
@@ -78,7 +81,7 @@ class TFMmodeler:
         self.model.add(Dense(units=1)) # Prediciton of the next closing
 
         self.model.compile(optimizer='adam',loss='mean_squared_error')
-        history=self.model.fit(x_train,y_train, epochs=25, batch_size=32)
+        history=self.model.fit(x_train,y_train, epochs=50, batch_size=32)
 
         if store:
             self.saveModel()
@@ -86,7 +89,17 @@ class TFMmodeler:
        # return self.model
 
 
-    '''Serialization'''
+    def __init__(self,pticker: str):
+        # Soloccarga un modelo calculado
+        self.ticker = pticker
+        self.scaler = MinMaxScaler(feature_range=(0,1))
+        if self.loadModel() :
+            return 
+        else:
+            return None
+
+
+    """Serialization"""
     
     def saveModel(self):
         self.model.save(self.model_directory+f"{self.ticker}-{self.moneda}.h5")
@@ -113,7 +126,7 @@ class TFMmodeler:
         plt.savefig(self.model_directory+f"{self.ticker}-{self.moneda}_train.png")
  
 
-    ''' Test the Model '''            
+    """ Test the Model """            
     
     def testModel(self ): 
 
@@ -160,7 +173,7 @@ class TFMmodeler:
         
 
         # Predict Next Day 
-        real_data = [model_inputs[len(model_inputs) + 1 - prediction_days:len(model_inputs+1), 0]] 
+        real_data = [model_inputs[len(model_inputs)  - prediction_days:len(model_inputs), 0]] 
         real_data = np.array(real_data)
         real_data = np.reshape(real_data, (real_data.shape[0],real_data.shape[1],1))
 
@@ -174,3 +187,25 @@ class TFMmodeler:
 
 
         return predicted_prices
+
+    def predictNext(self, data):
+        #limpiamos los valores null
+        data = data.dropna(axis=0 )
+        #Quitamos las fechas
+        data = data.values
+        #Ajustamos el fit
+        self.scaler.fit(data)
+        data =  data.reshape(-1,1)
+        data = self.scaler.transform(data)
+
+
+        real_data = [data[len(data)  - prediction_days:len(data), 0]] 
+        real_data =  np.array(real_data)
+        real_data = np.reshape(real_data, (real_data.shape[0],real_data.shape[1],1))
+
+
+        
+        prediction = self.model.predict(real_data)
+        prediction = self.scaler.inverse_transform(prediction)
+        print (f"Prediction: {prediction}")  
+        return prediction
