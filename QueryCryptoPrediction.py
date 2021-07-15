@@ -39,7 +39,7 @@ data.tail(2)
 
 ''' Run Crypto Model'''
 
-model = ctm.TFMmodeler(text)
+model = ctm.TFMmodeler(directory="", pticker=text, moneda=ctm.TFMmodeler.moneda, loadOnly=True  )
 model.predictNext(data)
 
 

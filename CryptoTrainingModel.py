@@ -24,11 +24,18 @@ class TFMmodeler:
     moneda = "USD"
     metric = "Close"
 
-    def __init__(self, directory: str , pticker: str, moneda: str, store=True):
+    def __init__(self, directory: str , pticker: str, moneda: str, store=True, loadOnly=False):
         self.ticker = pticker
+        self.scaler = MinMaxScaler(feature_range=(0,1))
+
+        # Solo carga un modelo calculado
+        if loadOnly:
+            if self.loadModel() :
+                return 
+
+
         self.moneda = moneda
         self.directory = directory
-        self.scaler = MinMaxScaler(feature_range=(0,1))
 
        
         rawdata = pd.read_csv(directory+f"{pticker}-{moneda}.csv") 
@@ -86,17 +93,8 @@ class TFMmodeler:
         if store:
             self.saveModel()
             self.saveHistory(history)
-       # return self.model
+    # return self.model
 
-
-    def __init__(self,pticker: str):
-        # Soloccarga un modelo calculado
-        self.ticker = pticker
-        self.scaler = MinMaxScaler(feature_range=(0,1))
-        if self.loadModel() :
-            return 
-        else:
-            return None
 
 
     """Serialization"""
@@ -135,6 +133,7 @@ class TFMmodeler:
         try: # Intenta recuperar un fichero de prueba propio 
             self.test_data = pd.read_csv(self.test_directory+f"{self.ticker}-{self.moneda}.csv") 
             self.test_data = self.test_data.drop (['Open','High','Low', 'Volume','Adj Close'], axis=1)
+            self.test_data = self.test_data.dropna(axis=0 )
             self.test_data['Date'] =  pd.to_datetime(self.test_data['Date'], format='%Y-%m-%d')
         except FileNotFoundError : # o usamos los datos apartados antes
             print(f"Using split Test Data for {self.ticker}")
@@ -143,6 +142,10 @@ class TFMmodeler:
         total_dataset = pd.concat((self.data['Close'], self.test_data['Close']), axis=0)
         # asi podemos empezar a contar los 60 dias tambien para los primeros datos de prueba
         model_inputs = total_dataset[len(total_dataset)-len(self.test_data)- prediction_days:].values
+
+        #fit Again des data 
+        self.scaler.fit(model_inputs)  
+
         #limitamos los valores 
         model_inputs =  model_inputs.reshape(-1,1)
         model_inputs = self.scaler.transform(model_inputs)
