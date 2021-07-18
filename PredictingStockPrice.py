@@ -1,9 +1,12 @@
 import os
+import multiprocessing as mp
+import time
+import math
 #from itertools import Predicate
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import pandas_datareader as web
+
 import datetime as dt
 
 from sklearn.preprocessing import MinMaxScaler
@@ -23,35 +26,40 @@ cripto = []
 data_directory = f"Ficheros Originales"+os.sep
 
 
+if __name__ == '__main__':
 
-#Parseamos el repertorio por csv de cripto
+    with mp.Pool(processes=4) as pool:
+     
+        #Parseamos el repertorio por csv de cripto
 
-for fichero in os.listdir(data_directory):
-    if fichero.endswith(f"{moneda}.csv"):
-        cripto.append( fichero.split('-')[0])
-    else:
-        continue
-
-
-
-
-print(f"Tabla de Cripto: {cripto}")
-
-
-#Load Data
+        for fichero in os.listdir(data_directory):
+            if fichero.endswith(f"{moneda}.csv"):
+                cripto.append( fichero.split('-')[0])
+            else:
+                continue
 
 
 
-'''Tabla de modelo '''
-modelosCrypto = []
 
-# Creamos una tabla de modelo, con un modelo propio a cada cripto
-for ticker in cripto:
-    modelosCrypto.append({"ticker":ticker, "model": ctm.TFMmodeler(data_directory,ticker,moneda) })
+        print(f"Tabla de Cripto: {cripto}")
 
-''' Test the Model Accuracy  on Existing Data '''
-for instance  in modelosCrypto:    
-    instance["model"].testModel()
+
+        #Load Data
+
+
+
+        '''Tabla de modelo '''
+        modelosCrypto = []
+
+        # Creamos una tabla de modelo, con un modelo propio a cada cripto
+        for ticker in cripto:
+            process=mp.Process( modelosCrypto.append({"ticker":ticker, "model": ctm.TFMmodeler(data_directory,ticker,moneda) }) )
+            process.start()
+            #process.join()
+
+        ''' Test the Model Accuracy  on Existing Data '''
+        for instance  in modelosCrypto:    
+            instance["model"].testModel()
 
 
 
