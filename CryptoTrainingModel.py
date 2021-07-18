@@ -143,8 +143,7 @@ class TFMmodeler:
         # asi podemos empezar a contar los 60 dias tambien para los primeros datos de prueba
         model_inputs = total_dataset[len(total_dataset)-len(self.test_data)- prediction_days:].values
 
-        #fit Again des data 
-        self.scaler.fit(model_inputs)  
+
 
         #limitamos los valores 
         model_inputs =  model_inputs.reshape(-1,1)
