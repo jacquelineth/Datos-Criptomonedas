@@ -1,3 +1,4 @@
+from math import e
 import os
 #from itertools import Predicate
 import numpy as np
@@ -88,7 +89,7 @@ class TFMmodeler:
         self.model.add(Dense(units=1)) # Prediciton of the next closing
 
         self.model.compile(optimizer='adam',loss='mean_squared_error')
-        history=self.model.fit(x_train,y_train, epochs=50, batch_size=32)
+        history=self.model.fit(x_train,y_train, epochs=20, batch_size=32)
 
         if store:
             self.saveModel()
@@ -130,21 +131,23 @@ class TFMmodeler:
 
 
         ###TODO :Get better  Test data
+        exceptData = self.test_data # Guardamos una referncia por si peta
         try: # Intenta recuperar un fichero de prueba propio 
             self.test_data = pd.read_csv(self.test_directory+f"{self.ticker}-{self.moneda}.csv") 
             self.test_data = self.test_data.drop (['Open','High','Low', 'Volume','Adj Close'], axis=1)
             self.test_data = self.test_data.dropna(axis=0 )
             self.test_data['Date'] =  pd.to_datetime(self.test_data['Date'], format='%Y-%m-%d')
+            exceptData = [] # limpiamos la memoria
         except FileNotFoundError : # o usamos los datos apartados antes
             print(f"Using split Test Data for {self.ticker}")
+            self.test_data = exceptData # recuperamos los antiguos data 
+            print(f"{self.ticker}===>\n"+"\n\n" )
+            self.test_data.info()
         actual_prices =  self.test_data['Close'].values
         # Vamos a guardar solo las columnas de cierre , y añadir los datos anteriores
         total_dataset = pd.concat((self.data['Close'], self.test_data['Close']), axis=0)
         # asi podemos empezar a contar los 60 dias tambien para los primeros datos de prueba
         model_inputs = total_dataset[len(total_dataset)-len(self.test_data)- prediction_days:].values
-
-        #fit Again des data 
-        self.scaler.fit(model_inputs)  
 
         #limitamos los valores 
         model_inputs =  model_inputs.reshape(-1,1)
@@ -174,6 +177,7 @@ class TFMmodeler:
         plt.legend()
         plt.savefig(self.model_directory+f"{self.ticker}-{self.moneda}.png")
         
+        print(f"Generated plot for {self.ticker}")
 
         # Predict Next Day 
         real_data = [model_inputs[len(model_inputs)  - prediction_days:len(model_inputs), 0]] 
