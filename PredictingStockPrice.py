@@ -21,15 +21,25 @@ metric = ctm.TFMmodeler.metric
 
 '''Data Prep'''
 cripto = []
+'''Tabla de modelo '''
+modelosCrypto = []
 
 # Variable de la carrpeta de datos de crypto
 data_directory = f"Ficheros Originales"+os.sep
 
 
-if __name__ == '__main__':
+def build_test_models( ticker: str):
+    '''Build Model'''
+    current_model = ctm.TFMmodeler(data_directory,ticker,moneda)
+    ''' Test the Model Accuracy  on Existing Data '''
+    current_model.testModel()
 
-    with mp.Pool(processes=4) as pool:
-     
+    modelosCrypto.append({"ticker":ticker, "model": current_model })
+
+if __name__ == '__main__':
+    # Creamos un pool de tarea para cargar por lote a los modelos
+    with mp.Pool(processes=None) as pool:
+        #Load Data     
         #Parseamos el repertorio por csv de cripto
 
         for fichero in os.listdir(data_directory):
@@ -38,29 +48,15 @@ if __name__ == '__main__':
             else:
                 continue
 
-
-
-
         print(f"Tabla de Cripto: {cripto}")
 
 
-        #Load Data
-
-
-
-        '''Tabla de modelo '''
-        modelosCrypto = []
-
         # Creamos una tabla de modelo, con un modelo propio a cada cripto
-        for ticker in cripto:
-            process=mp.Process( modelosCrypto.append({"ticker":ticker, "model": ctm.TFMmodeler(data_directory,ticker,moneda) }) )
-            process.start()
-            #process.join()
-
-        ''' Test the Model Accuracy  on Existing Data '''
-        for instance  in modelosCrypto:    
-            instance["model"].testModel()
-
-
-
+        #for ticker in cripto:
+        pool.map(build_test_models,cripto)
+        #process=mp.Process( build_test_models(moneda, data_directory, modelosCrypto, ticker) )
+        #process.start()
+        #process.join()
+        pool.close()
+        pool.join()
 
