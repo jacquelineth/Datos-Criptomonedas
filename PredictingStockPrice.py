@@ -37,8 +37,10 @@ def build_test_models( ticker: str):
     modelosCrypto.append({"ticker":ticker, "model": current_model })
 
 if __name__ == '__main__':
+    poolSize =(os.cpu_count()) / 2
     # Creamos un pool de tarea para cargar por lote a los modelos
-    with mp.Pool(processes=None) as pool:
+    #with mp.Pool(processes=None) as pool:
+    with mp.Pool(processes=4) as pool:
         #Load Data     
         #Parseamos el repertorio por csv de cripto
 
