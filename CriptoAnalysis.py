@@ -36,6 +36,7 @@ primero  = True
 for ticker in cripto :
 
     data = pd.read_csv(directory+f"{ticker}-{moneda}.csv")
+    data = data.dropna(axis=0 )
     if primero: 
         combined =  data[[metric]].copy ()
         colnames.append(ticker)
