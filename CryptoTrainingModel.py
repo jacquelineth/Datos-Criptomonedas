@@ -80,15 +80,19 @@ class TFMmodeler:
         # Build The Model
         self.model = Sequential()
 
-        self.model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1],1)))
+        self.model.add(LSTM(units=64, return_sequences=True, input_shape=(x_train.shape[1],1)))
         self.model.add(Dropout(0.2))
-        self.model.add(LSTM(units=50, return_sequences=True))
+        self.model.add(LSTM(units=64, return_sequences=False, input_shape=(x_train.shape[1],1)) )
         self.model.add(Dropout(0.2))
-        self.model.add(LSTM(units=50))
+        #self.model.add(LSTM(units=50))
         self.model.add(Dropout(0.2))
+
+        self.model.add(Dense(32,kernel_initializer="uniform",activation='relu'))  
+
         self.model.add(Dense(units=1)) # Prediciton of the next closing
 
-        self.model.compile(optimizer='adam',loss='mean_squared_error')
+        #self.model.compile(optimizer='adam',loss='mean_squared_error')
+        self.model.compile(optimizer='adam',loss='mae')
         history=self.model.fit(x_train,y_train, epochs=20, batch_size=32)
 
         if store:
